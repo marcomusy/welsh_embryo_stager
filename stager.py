@@ -11,7 +11,7 @@ from vedo.pyplot import plot, histogram
 from glob import glob
 from utils import SplinePlotter, Limb, find_extrema, fit_parabola, ageAsString, fdays
 
-_version = "welsh_stager v0.1"
+_version = "welsh_stager v0.2"
 datadir = 'data/staged_welsh_reduced/'
 
 
@@ -289,9 +289,22 @@ def predict(datapoints, embryoname='', do_plots=True):
                    distance=64.14,
                    clippingRange=(12.96, 129.5))
         plt.show(tcourse, pt, joinline, err_sphere, axes, comment, camera=cam, at=2)
-        plt.interactive()
 
-        pic_array = plt.screenshot(asarray=True)
+        # create a png file
+        basename, file_extension = os.path.splitext(embryoname)
+        outf = os.path.join("output", embryoname.replace(file_extension, '_staging.png'))
+        plt.screenshot(outf)
+        # pic_array = plt.screenshot(asarray=True)
+
+        # create a txt file
+        outf = os.path.join("output", embryoname.replace(file_extension, '.txt'))
+        with open(outf, 'w') as f:
+            f.write(f"{os.getlogin()} {basename}  u 1.0  0 0 0 0 {len(datapoints)}\n")
+            for p in datapoints:
+                f.write(f"MEASURED {p[0]} {p[1]}\n")
+        print(f"Output image and txt data saved to output/{basename}*")
+
+        plt.interactive()
 
     return pic_array, best_age, sigma, best_score
 

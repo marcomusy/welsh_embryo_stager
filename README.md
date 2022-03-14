@@ -1,6 +1,6 @@
 ## Welsh Embryo Stager
 
-Stage an embryo in the age range `E14` -> `E15` by drawing a spline on a photographic image.
+Stage a mouse embryo in the age range `E14` -> `E15` by drawing a spline on a photographic image.
 
 ### Install and run
 

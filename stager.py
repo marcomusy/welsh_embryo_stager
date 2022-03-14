@@ -280,7 +280,7 @@ def predict(datapoints, embryoname='', do_plots=True):
         vers = Text2D(f"{_version}, vedo {_vedo_version}", pos='bottom-right', s=0.7)
 
         if not len(vobj):
-            print("ERROR: sorry, could not find a solution. Try again with new points.")
+            print("ERROR: sorry, could not find a solution. Try again with new points!")
             return [], 0,0,0
 
         plt = Plotter(size=(1800, 1000), shape="1|2", sharecam=False,
@@ -293,6 +293,7 @@ def predict(datapoints, embryoname='', do_plots=True):
                    distance=64.14,
                    clippingRange=(13.00, 129.6))
         plt.show(tcourse, pt, joinline, err_sphere, axes, comment, camera=cam, at=2)
+        plt.background('w','#dceef4')
 
         # create a png file
         basename, file_extension = os.path.splitext(embryoname)

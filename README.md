@@ -14,9 +14,10 @@ pip install vedo==2022.1.0
 ```
 
 - Copy the repository locally eg. <br>
-`git clone https://github.com/marcomusy/welsh_embryo_stager.git`
-
-`cd welsh_embryo_stager`
+```bash
+git clone https://github.com/marcomusy/welsh_embryo_stager.git
+cd welsh_embryo_stager
+```
 
 - Run the program <br>
 `python stager.py pics/E14.5_L3-03_HL2.5X.jpg`

@@ -19,9 +19,9 @@ git clone https://github.com/marcomusy/welsh_embryo_stager.git
 cd welsh_embryo_stager
 ```
 
-- Run the program
+- Run the program, eg.:
 ```bash
-python stager.py pics/E14.5_L3-03_HL2.5X.jpg`
+python stager.py pics/E14.5_L3-03_HL2.5X.jpg
 ```
 
 - Draw a spline by clicking points on your image
@@ -29,7 +29,7 @@ python stager.py pics/E14.5_L3-03_HL2.5X.jpg`
 ![](https://user-images.githubusercontent.com/32848391/158235171-80618fb1-ae35-4a30-8279-4dabdd35a92d.png)
 
 
-- Can also read and stage a text file directly with
+- Can also read and stage a text file directly with, eg.:
 ```bash
 python stager.py pics/E14.5_L3-03_HL2.5X_LHL.txt
 ```

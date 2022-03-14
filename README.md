@@ -20,7 +20,9 @@ cd welsh_embryo_stager
 ```
 
 - Run the program <br>
-`python stager.py pics/E14.5_L3-03_HL2.5X.jpg`
+```bash
+python stager.py pics/E14.5_L3-03_HL2.5X.jpg`
+```
 
 - Draw a spline by clicking points on your image
 

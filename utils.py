@@ -34,8 +34,14 @@ class SplinePlotter(Plotter):
         self.points = Points(self.cpoints).ps(10).c('purple5')
         self.points.pickable(False)  # avoid picking the same point
         if len(self.cpoints) > 2:
-            self.spline = Spline(self.cpoints, closed=False).c('yellow5').lw(3)
-            self.add([self.points, self.spline])
+            try:
+                self.spline = Spline(self.cpoints, closed=False).c('yellow5').lw(3)
+                self.add([self.points, self.spline])
+            except ValueError:
+                # tipically clicking too close points make Spline fail
+                self.cpoints = []
+                self.remove([self.spline, self.points]).render()
+                return
         else:
             self.add(self.points)
 

@@ -275,19 +275,23 @@ def predict(datapoints, embryoname='', do_plots=True):
                       f" (or E{fdays(best_age)}, {int(best_age+0.5)}h) ",
                       pos='top-left', bg='g3', s=1.2)
 
-        now  = Text2D(datetime.now().strftime("%c"), pos='bottom-left', s=0.8)
+        now  = Text2D(f'User: {os.getlogin()}, {datetime.now().strftime("%c")}',
+                      pos='bottom-left', s=0.8)
         vers = Text2D(f"{_version}, vedo {_vedo_version}", pos='bottom-right', s=0.7)
 
+        if not len(vobj):
+            print("ERROR: sorry, could not find a solution. Try again with new points.")
+            return [], 0,0,0
 
         plt = Plotter(size=(1800, 1000), shape="1|2", sharecam=False,
                       title="Welsh Mouse Staging System Output")
         plt.show(vobj[:-1]+[txtf, now, vers], at=0, zoom=1.2)
         plt.show(vobj[-1],  at=1, zoom=1.5)
-        cam = dict(pos=(66.09, -24.32, 42.84),
-                   focalPoint=(34.14, 20.14, 9.436),
+        cam = dict(pos=(66.85, -24.10, 42.42),
+                   focalPoint=(34.89, 20.37, 9.009),
                    viewup=(-0.2861, 0.4357, 0.8534),
                    distance=64.14,
-                   clippingRange=(12.96, 129.5))
+                   clippingRange=(13.00, 129.6))
         plt.show(tcourse, pt, joinline, err_sphere, axes, comment, camera=cam, at=2)
 
         # create a png file
@@ -330,11 +334,11 @@ if __name__ == '__main__':
         else:
             pic = Picture(filename, channels=(0,1,2))
 
-            t = """Click to add a point
-            Right-click to remove it
-            Drag mouse to change constrast
-            Press c to clear points"""
-            instrucs = Text2D(t, pos='bottom-left', c='k1', bg='g9', font='Quikhand')
+            t = "Click to add a point\n"
+            t+= "Right-click to remove it\n"
+            t+= "Drag mouse to change constrast\n"
+            t+= "Press c to clear points"
+            instrucs = Text2D(t, pos='bottom-left', c='k1', bg='g9', font='Quikhand', alpha=0.5)
 
             plt = SplinePlotter(size=(1200,1000), title="Welsh Mouse Staging System")
             plt.addCallback('KeyPress', plt.keyPress)
@@ -343,10 +347,11 @@ if __name__ == '__main__':
             plt.show(pic, instrucs, mode='image', zoom='tight')
             #plt.close()
             datapoints = plt.datapoints()
-            if len(datapoints) > 3:
+            if len(datapoints) > 5:
                 name = os.path.basename(filename)
                 result = predict(datapoints, embryoname=name)
-                pic_array, best_age, sigma, best_score = result
+            else:
+                print("ERROR: not enough points to stage a limb!", len(datapoints))
 
 
 

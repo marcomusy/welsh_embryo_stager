@@ -1,14 +1,15 @@
 #!/usr/bin/python3
 #
 import os, sys
+from glob import glob
 from datetime import datetime
 import numpy as np
 from vedo import __version__ as _vedo_version
-from vedo import mag, Line, Ribbon, Spline, Points, Axes, show, Point, load, Circle
-from vedo import settings, fitCircle, printc, Plotter, Text2D, precision, Sphere, Picture
+from vedo import mag, Line, Ribbon, Spline, Points, Axes, show, Point, load
+from vedo import settings, sys_platform, Picture, Circle
+from vedo import fitCircle, printc, Plotter, Text2D, precision, Sphere
 from vedo.utils import sortByColumn
 from vedo.pyplot import plot, histogram
-from glob import glob
 from utils import SplinePlotter, Limb, find_extrema, fit_parabola, ageAsString, fdays
 
 _version = "welsh_stager v0.2"
@@ -124,7 +125,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
 
     # save this curve
     aveline_s.write('calibration_spline_welsh.vtk')
-    printc("\save calibration SPLINE saved to: calibration_spline_welsh.vtk", c='g')
+    printc("calibration SPLINE saved to: calibration_spline_welsh.vtk", c='g')
 
     ht = f"age group {ageAsString(selected_agegroup)} ({selected_agegroup}h)"
 
@@ -137,7 +138,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     calib   = np.c_[ids, agegroups]
     calib_s = Spline(calib, res=100).c('b3')
     calib_s.write('calibration_table_welsh.vtk')
-    printc("\save calibration TABLE  saved to: calibration_table_welsh.vtk", c='g')
+    printc("calibration TABLE  saved to: calibration_table_welsh.vtk", c='g')
 
     pp = plot(calib, '-o',
               xtitle='time course path length (steps)', ytitle='age (h)',
@@ -195,7 +196,7 @@ def descriptors(datapoints, do_plots=0):
     if len(peak_x) == 0 or len(valley_x) == 0:
         return (0,0,0), []
 
-    rib = Ribbon(green_peaks, red_valleys, alpha=0.1).z(.1)
+    rib = Ribbon(green_peaks, red_valleys, alpha=0.1).z(.1).lighting('off')
     area = rib.clean().triangulate().area() /r3 /10
     xb = rib.xbounds()
     yb = rib.ybounds()
@@ -218,13 +219,16 @@ def descriptors(datapoints, do_plots=0):
 
         ptsg = Points(epts[peak_x],   r=15, c='g5').lighting('off')
         ptsr = Points(epts[valley_x], r=15, c='r5').lighting('off')
-        circle = Circle(cm3, r3, c='k6').z(-0.1)
+        circle = Circle(cm3, r3, c='k6').z(-0.01)
         cm1 = Point(cm1, c='k4', r=4).lighting('off')
         cm2 = Point(cm2, c='k3', r=4).lighting('off')
         cm3 = Point(cm3, c='k1', r=5).lighting('off')
-        rib2 = Ribbon(epts[valley_x], epts[valley_x[0]:valley_x[-1]], c='k6')
+        rib2 = Ribbon(epts[valley_x], epts[valley_x[0]:valley_x[-1]], c='k5')
+        rib2.lighting('off')
 
-        vobjs = [eline, Axes(eline), rib2, circle, cm1, cm2, cm3, ptsg, ptsr, pp]
+        ebox = eline.box().c('k').lw(1)
+
+        vobjs = [eline, ebox, rib2, circle, cm1, cm2, cm3, ptsg, ptsr, pp]
         # plt = Plotter(N=2, sharecam=False).background([250,250,255], at=0)
         # plt.show(eline, Axes(eline), rib2, circle, cm1, cm2, cm3, ptsg, ptsr, at=0)
         # plt.show(pp, at=1, zoom=1.15, mode='image').interactive().close()
@@ -319,7 +323,7 @@ def predict(datapoints, embryoname='', do_plots=True):
 if __name__ == '__main__':
 
     settings.defaultFont = 'Calco'
-    settings.useDepthPeeling = True
+    settings.useDepthPeeling = (sys_platform != "Darwin")
 
     # generate_calibration_welsh()
     # plot_stats()
@@ -353,15 +357,4 @@ if __name__ == '__main__':
                 result = predict(datapoints, embryoname=name)
             else:
                 print("ERROR: not enough points to stage a limb!", len(datapoints))
-
-
-
-
-
-
-
-
-
-
-
 

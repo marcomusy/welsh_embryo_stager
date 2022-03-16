@@ -4,4 +4,6 @@ __pycache__
 output
 dataset
 *npz
-*vtk
+
+build
+dist

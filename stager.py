@@ -241,14 +241,17 @@ def descriptors(datapoints, do_plots=False):
 def predict(datapoints, embryoname='', do_plots=True):
 
     result, vobj = descriptors(datapoints, do_plots=do_plots)
-    tcourse = load('calibration_spline.vtk').c('k').lw(5)
+    # tcourse = load(os.path.join('tuning/', 'calibration_spline.vtk')).c('k').lw(5)
+    tcourse = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_spline.vtk').c('k').lw(5)
 
     # the id (or step) is what we need to map to age
     idn = tcourse.closestPoint(result, returnPointId=True)
     q = tcourse.points()[idn]
 
     # find the closest entry in the calibration curve
-    calib = load('calibration_table.vtk').points()
+    # calib = load(os.path.join('tuning/', 'calibration_table.vtk')).points()
+    calib = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_table.vtk').points()
+
     idt = (np.abs(calib[:,0] - idn)).argmin()
     best_age = round(calib[idt][1])
     best_score = mag(result - q)
@@ -295,18 +298,24 @@ def predict(datapoints, embryoname='', do_plots=True):
         plt.show(tcourse, pt, joinline, err_sphere, axes, chi2msg, camera=cam, at=2)
         plt.background('w','#dceef4')
 
-        # create a png file
-        basename, file_extension = os.path.splitext(embryoname)
-        outf = os.path.join("output", embryoname.replace(file_extension, '_staging.png'))
-        plt.screenshot(outf)  # pic_array = plt.screenshot(asarray=True)
+        # create a png and text file
+        if os.path.isdir("output"):
+            basename, file_extension = os.path.splitext(embryoname)
 
-        # create a txt file
-        outf = os.path.join("output", embryoname.replace(file_extension, '.txt'))
-        with open(outf, 'w') as f:
-            f.write(f"{os.getlogin()} {basename}  u 1.0  0 0 0 0 {len(datapoints)}\n")
-            for p in datapoints:
-                f.write(f"MEASURED {p[0]} {p[1]}\n")
-        print(f"Output image and txt data saved to output/{basename}*")
+            outf = os.path.join("output", embryoname.replace(file_extension, '_staging.png'))
+            plt.screenshot(outf)
+            # pic_array = plt.screenshot(asarray=True)
+
+            # create a txt file
+            outf = os.path.join("output", embryoname.replace(file_extension, '.txt'))
+            with open(outf, 'w') as f:
+                f.write(f"{os.getlogin()} {basename}  u 1.0  0 0 0 0 {len(datapoints)}\n")
+                for p in datapoints:
+                    f.write(f"MEASURED {p[0]} {p[1]}\n")
+            print(f"Output image and txt data saved to output/{basename}*")
+        else:
+            print("\nYou don't have a local directory 'output' so cannot write to it. Skip.\n")
+            # pic_array = plt.screenshot(asarray=True)
 
         plt.interactive()
 

@@ -3,7 +3,6 @@
 import numpy as np
 from vedo.utils import sortByColumn
 from vedo import Plotter, Points, Spline
-from scipy.optimize import curve_fit
 from scipy import signal
 import os
 
@@ -17,17 +16,15 @@ class SplinePlotter(Plotter):
         self.spline = None
 
     def onLeftClick(self, evt):
-        if not evt.actor: return
-        p = evt.picked3d + [0,0,1]
-        self.cpoints.append(p)
-        self.update()
-        # printc("Added point:", precision(p[:2],4), c='g')
+        if evt.actor:
+            p = evt.picked3d + [0,0,1]
+            self.cpoints.append(p)
+            self.update()
 
     def onRightClick(self, evt):
         if evt.actor and len(self.cpoints):
             self.cpoints.pop() # pop removes from the list the last pt
             self.update()
-            # printc("Deleted last point", c="r")
 
     def update(self):
         self.remove([self.spline, self.points])  # remove old points and spline
@@ -49,7 +46,6 @@ class SplinePlotter(Plotter):
         if evt.keyPressed == 'c':
             self.cpoints = []
             self.remove([self.spline, self.points]).render()
-            # printc("==== Cleared all points ====", c="r", invert=True)
 
     def datapoints(self):
         if not len(self.cpoints):
@@ -163,10 +159,14 @@ class Limb:
             sfn = sfn.replace('__','_')
             sfn = sfn.split('_')
             self.age = 0
-            self.day = int(sfn[0].split(';')[0].replace("E",""))
-            self.hour = int(sfn[0].split(';')[1])
-            self.ageAsString = "E"+str(self.day)+"."+sfn[0].split(';')[1]
-            self.litterID = sfn[1]
+            try:
+                self.day = int(sfn[0].split(';')[0].replace("E",""))
+                self.hour = int(sfn[0].split(';')[1])
+                self.ageAsString = "E"+str(self.day)+"."+sfn[0].split(';')[1]
+                self.litterID = sfn[1]
+            except:
+                # not in the usual format E...
+                pass
         else:
             sfn = self.name.split('_')
             self.age = 0
@@ -196,42 +196,17 @@ def load_welsh_limbs(source='data/staged_welsh/'):
     return limbs, ['13.00','13.06','13.12','13.18','14.00','14.06', '14.12', '14.18']
 
 
-############################################### staging
-def reposition(lines):
-    # rigidly put a whole set of limb outlines about horizontal and their base
-    # at (0,0,0) without modifying their relative positioning
-    p0s = []
-    p1s = []
-    pvs = []
-    for l in lines:
-        pts = l.points()
-        p0s.append(pts[0])
-        p1s.append(pts[-1])
-        pvs.append(pts[int(l.N()/2)])
-
-    p0 = np.mean(np.array(p0s), axis=0)
-    p1 = np.mean(np.array(p1s), axis=0)
-    pm = (p0+p1)/2
-    pv = np.mean(np.array(pvs), axis=0)
-    v = (pv-pm)/ np.linalg.norm(pv-pm)
-
-    cr = np.cross(v, [0,1,0])[2]
-    a = np.arccos(np.dot([0,1,0], v)) * 57.3 * cr/abs(cr)
-    for l in lines: #all get same shift and rotation
-        l.shift(-pm).rotateZ(-90 + a)
-
 ###############################################
 def read_measured_points(filename):
     # read txt file points
 
-    f = open(filename, "r")
-    lines = f.readlines()
-    f.close()
+    with open(filename, "r") as f:
+        lines = f.readlines()
 
     datapoints = []
-    for i in range(len(lines)):
-        if i<1: continue
-        line = lines[i]
+    for i, line in enumerate(lines):
+        if not i:
+            continue
         if ',' in line:
             line = lines[i].split(',')
         else:
@@ -256,32 +231,6 @@ def fdays(agehour):
     serie = np.linspace(8,20, num=(20-8)*20, endpoint=False)
     idmin = np.argmin(np.abs(serie-agedec))
     return np.round(serie[idmin], 2)
-
-def fit_gauss(x, y):
-    x = np.asarray(x)
-    y = np.asarray(y)
-    ids = np.where(y>0.1)[0].astype(int)
-
-    x = x[ids]
-    y = y[ids]
-    mean = np.mean(x)
-    sigma = 10
-
-    def gaus(x, a, x0, sigma):
-        return a * np.exp(-((x - x0) ** 2) / (2 * sigma ** 2))
-
-    try:
-        popt, pcov = curve_fit(gaus, x, y, p0=[1, mean, sigma])
-    except:
-        return 0, [], []
-
-    #import matplotlib.pyplot as plt
-    #plt.plot(x, y, "b+:", label="data")
-    #plt.plot(x, gaus(x, *popt), "r-", label="fit")
-    #plt.legend()
-    #plt.show()
-
-    return abs(popt[2]), x, gaus(x, *popt)
 
 
 def fit_parabola(x, y):

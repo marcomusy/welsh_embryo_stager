@@ -17,7 +17,7 @@ added_files = [
     ('tuning/*', 'tuning/'), ##doesnt work?
     #('../vedo/vedo/fonts/*', 'vedo/fonts/'), ##OK
     (vedo_installdir+'/*', 'vedo/fonts/'), ##OK
- ]
+]
 
 a = Analysis(['stager.py'],
              pathex=[],
@@ -27,8 +27,6 @@ a = Analysis(['stager.py'],
                  'vtkmodules.all',
                  'vtkmodules.util',
                  'vtkmodules.util.numpy_support',
-                 'vtkmodules.numpy_interface.dataset_adapter',
-                 'vtkmodules.qt.QVTKRenderWindowInteractor',
              ],
              datas = added_files,
              hookspath=[],
@@ -41,6 +39,7 @@ a = Analysis(['stager.py'],
              noarchive=False)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
+
 #splash = Splash('a.jpg',
 #                binaries=a.binaries,
 #                datas=a.datas,

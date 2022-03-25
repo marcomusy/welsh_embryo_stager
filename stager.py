@@ -78,7 +78,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     # ref_shapes = load("data/marco/timecourse1d/*.vtk")
     # desc = []
     # for age in range(309, 361):
-    #     eline = ref_shapes[age-240]
+    #     eline = ref_shapes[age-249]
     #     eline = Spline(eline.cutWithPlane(origin=(1.5,0,0)), res=200) ### TEST CUT
     #     area, aratio, parabolic = descriptors(eline.points())[0]
     #     desc.append([area, aratio, parabolic])
@@ -241,16 +241,17 @@ def descriptors(datapoints, do_plots=False):
 def predict(datapoints, embryoname='', do_plots=True):
 
     result, vobj = descriptors(datapoints, do_plots=do_plots)
-    # tcourse = load(os.path.join('tuning/', 'calibration_spline.vtk')).c('k').lw(5)
-    tcourse = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_spline.vtk').c('k').lw(5)
+
+    tcourse = load(os.path.join('tuning/', 'calibration_spline.vtk')).c('k').lw(5)
+    # tcourse = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_spline.vtk').c('k').lw(5)
 
     # the id (or step) is what we need to map to age
     idn = tcourse.closestPoint(result, returnPointId=True)
     q = tcourse.points()[idn]
 
     # find the closest entry in the calibration curve
-    # calib = load(os.path.join('tuning/', 'calibration_table.vtk')).points()
-    calib = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_table.vtk').points()
+    calib = load(os.path.join('tuning/', 'calibration_table.vtk')).points()
+    # calib = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_table.vtk').points()
 
     idt = (np.abs(calib[:,0] - idn)).argmin()
     best_age = round(calib[idt][1])
@@ -263,13 +264,19 @@ def predict(datapoints, embryoname='', do_plots=True):
 
     if do_plots:
         err_sphere = Sphere(result, r=r, c='r5', alpha=0.1)
-        axes= Axes(
+        axes = Axes(
             tcourse,
             xtitle='area', ytitle='aspect ratio', ztitle='parabolic',
             xTitleBackfaceColor='t', yTitleBackfaceColor='t', zTitleBackfaceColor='t',
         )
         pt = Point(result, r=15, c='r5')
+        zshad = tcourse.zbounds()[0]
+
         joinline = Line(result, q).lw(3).c('g5')
+
+        tcourse.addShadow(plane='z', point=zshad)
+        tcourse_shad = tcourse.shadows[0].lw(1)
+        ribtc = Ribbon(tcourse, tcourse_shad).c('k').alpha(0.1).lighting('off')
 
         txtf = Text2D(f"{embryoname}\nEmbryo is"
                       f" {ageAsString(best_age)} \pm{sigma}h"
@@ -287,15 +294,21 @@ def predict(datapoints, embryoname='', do_plots=True):
             return [], 0,0,0
 
         plt = Plotter(size=(1800, 1000), shape="1|2", sharecam=False,
-                      title="Welsh Mouse Staging System Output")
+                      title="Welsh Embryonic Mouse Staging System")
+
         plt.show(vobj[:-1]+[txtf, now, vers], at=0, zoom=1.2)
+
         plt.show(vobj[-1],  at=1, zoom=1.5)
+
         cam = dict(pos=(66.85, -24.10, 42.42),
                    focalPoint=(34.89, 20.37, 9.009),
                    viewup=(-0.2861, 0.4357, 0.8534),
                    distance=64.14,
         )
-        plt.show(tcourse, pt, joinline, err_sphere, axes, chi2msg, camera=cam, at=2)
+        plt.show(tcourse, pt, joinline,
+                 tcourse_shad, ribtc,
+                 err_sphere, axes, chi2msg,
+                 camera=cam, at=2)
         plt.background('w','#dceef4')
 
         # create a png and text file

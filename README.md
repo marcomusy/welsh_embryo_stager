@@ -1,8 +1,8 @@
-## Welsh Embryo Stager
+# Welsh Mouse Embryo Stager
 
 Stage a mouse embryo in the age range `E14` -> `E15` by drawing a spline on a photographic image.
 
-### Install and run
+## Install and run
 
 - Install miniconda (if needed) from [here](https://docs.conda.io/en/latest/miniconda.html).
 
@@ -48,8 +48,8 @@ The algorithm gives reliable estimates only in the range `E14` to `E15`,
 User should check that finger peaks and valleys (marked in green and red)
 on the left plot are reasonably well identified.
 
-The error estimation is completely heuristic and should be taken as a rough indication.
-You can interact with the 3D scene of the bottom-right plot,
-the red sphere represents to the uncertainty in the parameter space.
+The error estimation is completely heuristic and should be taken as a rough indication,
+the red sphere represents the uncertainty in the parameter space.
+You can interact with the 3D scene of the bottom-right plot.
 
 

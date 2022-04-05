@@ -1,21 +1,30 @@
-#!/usr/bin/python3
-#
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import os, sys
+from glob import glob
 from datetime import datetime
 import numpy as np
 from vedo import __version__ as _vedo_version
-from vedo import mag, Line, Ribbon, Spline, Points, Axes, show, Point, load, Circle
-from vedo import settings, fitCircle, printc, Plotter, Text2D, precision, Sphere, Picture
+from vedo import settings, mag, precision, load, sys_platform, show
+from vedo import fitCircle, printc, Plotter, Text2D, Sphere
+from vedo import Line, Ribbon, Spline, Points, Axes, Circle, Point, Picture
 from vedo.utils import sortByColumn
 from vedo.pyplot import plot, histogram
+<<<<<<< HEAD
 from glob import glob
 from utils import SplinePlotter, Limb, find_extrema, fit_parabola, ageAsString, fdays
 
 _version = "welsh_stager v0.3"
 datadir = 'data/staged_welsh_reduced/'
+=======
+from utils import SplinePlotter, Limb, read_measured_points
+from utils import find_extrema, fit_parabola, ageAsString, fdays
+>>>>>>> f66d562ca31bafc111605a1f885c7215ebdb687b
 
+_version = "welsh_stager v0.3"
 
 ##################################################################### plots
+datadir = 'data/staged_welsh_reduced/' # for training only
 def plot_stats(do_plots=0):
     ages = []
     nominal_ages=[]
@@ -67,7 +76,7 @@ def plot_2d_cloud():
     exit(0)
 
 
-########################################################################
+##################################################################
 def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
 
     settings.useParallelProjection=True # press u to toggle
@@ -77,7 +86,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     # ref_shapes = load("data/marco/timecourse1d/*.vtk")
     # desc = []
     # for age in range(309, 361):
-    #     eline = ref_shapes[age-240]
+    #     eline = ref_shapes[age-249]
     #     eline = Spline(eline.cutWithPlane(origin=(1.5,0,0)), res=200) ### TEST CUT
     #     area, aratio, parabolic = descriptors(eline.points())[0]
     #     desc.append([area, aratio, parabolic])
@@ -124,7 +133,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
 
     # save this curve
     aveline_s.write('calibration_spline_welsh.vtk')
-    printc("\save calibration SPLINE saved to: calibration_spline_welsh.vtk", c='g')
+    printc("calibration SPLINE saved to: calibration_spline_welsh.vtk", c='g')
 
     ht = f"age group {ageAsString(selected_agegroup)} ({selected_agegroup}h)"
 
@@ -137,7 +146,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     calib   = np.c_[ids, agegroups]
     calib_s = Spline(calib, res=100).c('b3')
     calib_s.write('calibration_table_welsh.vtk')
-    printc("\save calibration TABLE  saved to: calibration_table_welsh.vtk", c='g')
+    printc("calibration TABLE  saved to: calibration_table_welsh.vtk", c='g')
 
     fig = plot(calib, '-o',
               xtitle='time course path length (steps)', ytitle='age (h)',
@@ -156,11 +165,10 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     exit(0)
 
 
-
 #####################################################################
-def descriptors(datapoints, do_plots=0):
+def descriptors(datapoints, do_plots=False):
 
-    eline = Spline(datapoints, res=200).c('b3').lw(3)
+    eline = Spline(datapoints, res=200).c('b3').lw(4)
     eline.scale(1/eline.averageSize())
 
     ## first round ##
@@ -195,7 +203,7 @@ def descriptors(datapoints, do_plots=0):
     if len(peak_x) == 0 or len(valley_x) == 0:
         return (0,0,0), []
 
-    rib = Ribbon(green_peaks, red_valleys, alpha=0.1).z(.1)
+    rib = Ribbon(green_peaks, red_valleys, alpha=0.1).z(.1).lighting('off')
     area = rib.clean().triangulate().area() /r3 /10
     xb = rib.xbounds()
     yb = rib.ybounds()
@@ -218,13 +226,20 @@ def descriptors(datapoints, do_plots=0):
 
         ptsg = Points(epts[peak_x],   r=15, c='g5').lighting('off')
         ptsr = Points(epts[valley_x], r=15, c='r5').lighting('off')
-        circle = Circle(cm3, r3, c='k6').z(-0.1)
+        circle = Circle(cm3, r3, c='k6').z(-0.01)
         cm1 = Point(cm1, c='k4', r=4).lighting('off')
         cm2 = Point(cm2, c='k3', r=4).lighting('off')
         cm3 = Point(cm3, c='k1', r=5).lighting('off')
-        rib2 = Ribbon(epts[valley_x], epts[valley_x[0]:valley_x[-1]], c='k6')
+        rib2 = Ribbon(epts[valley_x], epts[valley_x[0]:valley_x[-1]], c='k5')
+        rib2.lighting('off')
 
+<<<<<<< HEAD
         vobjs = [eline, Axes(eline), rib2, circle, cm1, cm2, cm3, ptsg, ptsr, fig]
+=======
+        ebox = eline.box().c('k').lw(1)
+
+        vobjs = [eline, ebox, rib2, circle, cm1, cm2, cm3, ptsg, ptsr, pp]
+>>>>>>> f66d562ca31bafc111605a1f885c7215ebdb687b
         # plt = Plotter(N=2, sharecam=False).background([250,250,255], at=0)
         # plt.show(eline, Axes(eline), rib2, circle, cm1, cm2, cm3, ptsg, ptsr, at=0)
         # plt.show(fig, at=1, zoom=1.15, mode='image').interactive().close()
@@ -238,14 +253,18 @@ def descriptors(datapoints, do_plots=0):
 def predict(datapoints, embryoname='', do_plots=True):
 
     result, vobj = descriptors(datapoints, do_plots=do_plots)
-    tcourse = load('calibration_spline.vtk').c('k').lw(5)
+
+    tcourse = load(os.path.join('tuning/', 'calibration_spline.vtk')).c('k').lw(5)
+    # tcourse = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_spline.vtk').c('k').lw(5)
 
     # the id (or step) is what we need to map to age
     idn = tcourse.closestPoint(result, returnPointId=True)
     q = tcourse.points()[idn]
 
     # find the closest entry in the calibration curve
-    calib = load('calibration_table.vtk').points()
+    calib = load(os.path.join('tuning/', 'calibration_table.vtk')).points()
+    # calib = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_table.vtk').points()
+
     idt = (np.abs(calib[:,0] - idn)).argmin()
     best_age = round(calib[idt][1])
     best_score = mag(result - q)
@@ -257,18 +276,19 @@ def predict(datapoints, embryoname='', do_plots=True):
 
     if do_plots:
         err_sphere = Sphere(result, r=r, c='r5', alpha=0.1)
-        # comment = f"{embryoname}\nAge is {best_age}h, {ageAsString(best_age)} \pm {sigma}"
-        # comment += f"\n\Chi\^2 = {precision(best_score, 3)}"
-        # comment = Text2D(comment, s=1.3, bg='y')
-        comment = None
-        axes= Axes(
+        axes = Axes(
             tcourse,
-            xtitle='area',
-            ytitle='aspect ratio',
-            ztitle='parabolic',
+            xtitle='area', ytitle='aspect ratio', ztitle='parabolic',
+            xTitleBackfaceColor='t', yTitleBackfaceColor='t', zTitleBackfaceColor='t',
         )
         pt = Point(result, r=15, c='r5')
+        zshad = tcourse.zbounds()[0]
+
         joinline = Line(result, q).lw(3).c('g5')
+
+        tcourse.addShadow(plane='z', point=zshad)
+        tcourse_shad = tcourse.shadows[0].lw(1)
+        ribtc = Ribbon(tcourse, tcourse_shad).c('k').alpha(0.1).lighting('off')
 
         txtf = Text2D(f"{embryoname}\nEmbryo is"
                       f" {ageAsString(best_age)} \pm{sigma}h"
@@ -278,36 +298,49 @@ def predict(datapoints, embryoname='', do_plots=True):
         now  = Text2D(f'User: {os.getlogin()}, {datetime.now().strftime("%c")}',
                       pos='bottom-left', s=0.8)
         vers = Text2D(f"{_version}, vedo {_vedo_version}", pos='bottom-right', s=0.7)
+        chi2msg = Text2D(f"\chi\^2 = {precision(best_score,2)}", pos='top-right',
+                         s=1.1, font='Kanopus')
 
         if not len(vobj):
-            print("ERROR: sorry, could not find a solution. Try again with new points!")
+            print("\nERROR: Could not find a solution. Try again with new points!\n")
             return [], 0,0,0
 
         plt = Plotter(size=(1800, 1000), shape="1|2", sharecam=False,
-                      title="Welsh Mouse Staging System Output")
+                      title="Welsh Embryonic Mouse Staging System")
+
         plt.show(vobj[:-1]+[txtf, now, vers], at=0, zoom=1.2)
+
         plt.show(vobj[-1],  at=1, zoom=1.5)
+
         cam = dict(pos=(66.85, -24.10, 42.42),
                    focalPoint=(34.89, 20.37, 9.009),
                    viewup=(-0.2861, 0.4357, 0.8534),
                    distance=64.14,
-                   clippingRange=(13.00, 129.6))
-        plt.show(tcourse, pt, joinline, err_sphere, axes, comment, camera=cam, at=2)
+        )
+        plt.show(tcourse, pt, joinline,
+                 tcourse_shad, ribtc,
+                 err_sphere, axes, chi2msg,
+                 camera=cam, at=2)
         plt.background('w','#dceef4')
 
-        # create a png file
-        basename, file_extension = os.path.splitext(embryoname)
-        outf = os.path.join("output", embryoname.replace(file_extension, '_staging.png'))
-        plt.screenshot(outf)
-        # pic_array = plt.screenshot(asarray=True)
+        # create a png and text file
+        if os.path.isdir("output"):
+            basename, file_extension = os.path.splitext(embryoname)
 
-        # create a txt file
-        outf = os.path.join("output", embryoname.replace(file_extension, '.txt'))
-        with open(outf, 'w') as f:
-            f.write(f"{os.getlogin()} {basename}  u 1.0  0 0 0 0 {len(datapoints)}\n")
-            for p in datapoints:
-                f.write(f"MEASURED {p[0]} {p[1]}\n")
-        print(f"Output image and txt data saved to output/{basename}*")
+            outf = os.path.join("output", embryoname.replace(file_extension, '_staging.png'))
+            plt.screenshot(outf)
+            # pic_array = plt.screenshot(asarray=True)
+
+            # create a txt file
+            outf = os.path.join("output", embryoname.replace(file_extension, '.txt'))
+            with open(outf, 'w') as f:
+                f.write(f"{os.getlogin()} {basename}  u 1.0  0 0 0 0 {len(datapoints)}\n")
+                for p in datapoints:
+                    f.write(f"MEASURED {p[0]} {p[1]}\n")
+            print(f"Output image and txt data saved to output/{basename}*")
+        else:
+            print("\nYou don't have a local directory 'output' so cannot write to it. Skip.\n")
+            # pic_array = plt.screenshot(asarray=True)
 
         plt.interactive()
 
@@ -319,7 +352,7 @@ def predict(datapoints, embryoname='', do_plots=True):
 if __name__ == '__main__':
 
     settings.defaultFont = 'Calco'
-    settings.useDepthPeeling = True
+    settings.useDepthPeeling = (sys_platform != "Darwin")
 
     # generate_calibration_welsh()
     # plot_stats()
@@ -329,11 +362,20 @@ if __name__ == '__main__':
         settings.enableDefaultMouseCallbacks = False
 
         filename = sys.argv[1]
+        if not os.path.isfile(filename):
+            print("\nPlease use an image or txt file as argument.\n")
+            exit(0)
+
         if filename.lower().endswith('.txt'):
-            embryo = Limb(filename, author="welsh")
-            predict(embryo.datapoints, embryoname=embryo.name)
+            name = os.path.basename(filename)
+            datapoints = read_measured_points(filename)
+            predict(datapoints, embryoname=name)
         else:
-            pic = Picture(filename, channels=(0,1,2))
+            try:
+                pic = Picture(filename, channels=(0,1,2))
+            except:
+                print("\nPlease use a valid image or txt file with points coords.\n")
+                exit(0)
 
             t = "Click to add a point\n"
             t+= "Right-click to remove it\n"
@@ -346,22 +388,11 @@ if __name__ == '__main__':
             plt.addCallback('LeftButtonPress', plt.onLeftClick)
             plt.addCallback('RightButtonPress', plt.onRightClick)
             plt.show(pic, instrucs, mode='image', zoom='tight')
-            #plt.close()
+            #plt.close() # close the picture window
             datapoints = plt.datapoints()
             if len(datapoints) > 5:
                 name = os.path.basename(filename)
                 result = predict(datapoints, embryoname=name)
             else:
                 print("ERROR: not enough points to stage a limb!", len(datapoints))
-
-
-
-
-
-
-
-
-
-
-
 

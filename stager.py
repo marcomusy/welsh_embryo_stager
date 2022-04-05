@@ -10,16 +10,8 @@ from vedo import fitCircle, printc, Plotter, Text2D, Sphere
 from vedo import Line, Ribbon, Spline, Points, Axes, Circle, Point, Picture
 from vedo.utils import sortByColumn
 from vedo.pyplot import plot, histogram
-<<<<<<< HEAD
-from glob import glob
-from utils import SplinePlotter, Limb, find_extrema, fit_parabola, ageAsString, fdays
-
-_version = "welsh_stager v0.3"
-datadir = 'data/staged_welsh_reduced/'
-=======
 from utils import SplinePlotter, Limb, read_measured_points
 from utils import find_extrema, fit_parabola, ageAsString, fdays
->>>>>>> f66d562ca31bafc111605a1f885c7215ebdb687b
 
 _version = "welsh_stager v0.3"
 
@@ -233,13 +225,8 @@ def descriptors(datapoints, do_plots=False):
         rib2 = Ribbon(epts[valley_x], epts[valley_x[0]:valley_x[-1]], c='k5')
         rib2.lighting('off')
 
-<<<<<<< HEAD
         vobjs = [eline, Axes(eline), rib2, circle, cm1, cm2, cm3, ptsg, ptsr, fig]
-=======
-        ebox = eline.box().c('k').lw(1)
 
-        vobjs = [eline, ebox, rib2, circle, cm1, cm2, cm3, ptsg, ptsr, pp]
->>>>>>> f66d562ca31bafc111605a1f885c7215ebdb687b
         # plt = Plotter(N=2, sharecam=False).background([250,250,255], at=0)
         # plt.show(eline, Axes(eline), rib2, circle, cm1, cm2, cm3, ptsg, ptsr, at=0)
         # plt.show(fig, at=1, zoom=1.15, mode='image').interactive().close()

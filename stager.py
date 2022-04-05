@@ -11,7 +11,7 @@ from vedo.pyplot import plot, histogram
 from glob import glob
 from utils import SplinePlotter, Limb, find_extrema, fit_parabola, ageAsString, fdays
 
-_version = "welsh_stager v0.2"
+_version = "welsh_stager v0.3"
 datadir = 'data/staged_welsh_reduced/'
 
 
@@ -35,14 +35,14 @@ def plot_stats(do_plots=0):
     histogram(scores, xtitle='scores', c='r4').show().close()
     histogram(errors, xtitle='age uncertainty /h', c='p4').show().close()
 
-    pp = plot(nominal_ages, ages, 'o', lw=0, title='nominal ages vs ages')
-    pp += Line([310,310], [370,370], lw=2, c='r4')
-    pp.show().close()
+    fig = plot(nominal_ages, ages, 'o', lw=0, title='nominal ages vs ages')
+    fig += Line([310,310], [370,370], lw=2, c='r4')
+    fig.show().close()
 
-    pp = plot(sorted(ages), 'o', lw=0, ms=0.8,
+    fig = plot(sorted(ages), 'o', lw=0, ms=0.8,
               title='ordered ages vs index (a bit meaningless)')
-    pp += Line([40,320], [190, 360], lw=2, c='g4')
-    pp.show().close()
+    fig += Line([40,320], [190, 360], lw=2, c='g4')
+    fig.show().close()
     exit(0)
 
 ###################
@@ -139,13 +139,13 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     calib_s.write('calibration_table_welsh.vtk')
     printc("\save calibration TABLE  saved to: calibration_table_welsh.vtk", c='g')
 
-    pp = plot(calib, '-o',
+    fig = plot(calib, '-o',
               xtitle='time course path length (steps)', ytitle='age (h)',
               title=ht, titleColor='r4', la=0.1, ma=1
     )
-    pp += calib_s
-    pp += Point([ids[index],selected_agegroup], r=15, c='r4')
-    pp.show(zoom=1.5, size=(1100,825), title='CALIBRATION CURVE').close()
+    fig += calib_s
+    fig += Point([ids[index],selected_agegroup], r=15, c='r4')
+    fig.show(zoom=1.5, size=(1100,825), title='CALIBRATION CURVE').close()
 
     aveline_pt = Point(aveline_s.points()[ids[index]], r=25, c='r4')
 
@@ -210,11 +210,11 @@ def descriptors(datapoints, do_plots=0):
         t = f"area={precision(area,3)},"
         t+= f" a\_ratio={precision(aratio,3)},"
         t+= f" parabolic={precision(parabolic,3)}"
-        pp = plot(data_y, '-b', xtitle='index', ytitle='CM distance', title=t)
-        pp+= plot(green_peaks, '-g')
-        pp+= plot(red_valleys, '-r')
-        pp+= rib
-        pp+= Line(parabolapts)
+        fig = plot(data_y, '-b', xtitle='index', ytitle='CM distance', title=t)
+        fig+= plot(green_peaks, '-g', like=fig)
+        fig+= plot(red_valleys, '-r', like=fig)
+        fig+= rib
+        fig+= Line(parabolapts)
 
         ptsg = Points(epts[peak_x],   r=15, c='g5').lighting('off')
         ptsr = Points(epts[valley_x], r=15, c='r5').lighting('off')
@@ -224,10 +224,10 @@ def descriptors(datapoints, do_plots=0):
         cm3 = Point(cm3, c='k1', r=5).lighting('off')
         rib2 = Ribbon(epts[valley_x], epts[valley_x[0]:valley_x[-1]], c='k6')
 
-        vobjs = [eline, Axes(eline), rib2, circle, cm1, cm2, cm3, ptsg, ptsr, pp]
+        vobjs = [eline, Axes(eline), rib2, circle, cm1, cm2, cm3, ptsg, ptsr, fig]
         # plt = Plotter(N=2, sharecam=False).background([250,250,255], at=0)
         # plt.show(eline, Axes(eline), rib2, circle, cm1, cm2, cm3, ptsg, ptsr, at=0)
-        # plt.show(pp, at=1, zoom=1.15, mode='image').interactive().close()
+        # plt.show(fig, at=1, zoom=1.15, mode='image').interactive().close()
     ########################
 
     result = np.array([area, aratio, parabolic]) *10

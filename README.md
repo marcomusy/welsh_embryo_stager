@@ -9,7 +9,7 @@ Stage a mouse embryo in the age range `E14` -> `E15` by drawing a spline on a ph
 - Install [`vedo`](https://vedo.embl.es/)
 ```bash
 conda install scipy
-pip install vedo==2022.2.0
+pip install vedo==2022.3.0
 ```
 
 - Copy the repository locally
@@ -50,5 +50,18 @@ on the left plot are reasonably well identified.
 The error estimation is completely heuristic and should be taken as a rough indication,
 the red sphere represents the uncertainty in the parameter space.
 You can interact with the 3D scene of the bottom-right plot.
+
+
+### To generate a standalone executable
+With `pyinstaller` do:
+```bash
+rm build dist __pycache__
+pyinstaller stager.spec
+```
+This will create a `dist/stager.exe` file, which you can test with e.g.:
+```bash
+dist/stager.exe pics/E14.5_L3-03_HL2.5X.jpg
+```
+
 
 

@@ -1,22 +1,31 @@
 # -*- mode: python ; coding: utf-8 -*-
+#
 # https://discourse.vtk.org/t/python-vtk-and-pyinstaller/418/4
 #
+# To generate EXE:
 # rm build dist __pycache__
 # pyinstaller stager.spec
+#
+# To run:
+# dist/stager.exe test_E14.0_L1-02_x2.5_LHL.txt
+# or
+# dist/stager.exe test_image.jpg
 
-from vedo import installdir as vedo_installdir
+
 import os
-vedo_installdir = os.path.join(vedo_installdir,'fonts')
-print(vedo_installdir)
+from vedo import installdir as vedo_installdir
+vedo_fontsdir = os.path.join(vedo_installdir, 'fonts')
+print('vedo installation is in', vedo_installdir)
+print('Fonts are in', vedo_fontsdir)
 
 
 block_cipher = None
 
 
 added_files = [
-    ('tuning/*', 'tuning/'), ##doesnt work?
-    #('../vedo/vedo/fonts/*', 'vedo/fonts/'), ##OK
-    (vedo_installdir+'/*', 'vedo/fonts/'), ##OK
+#    ('tuning/*', 'tuning/'), ##doesnt work?
+    (os.path.join('tuning','*'), 'tuning'),
+    (os.path.join(vedo_fontsdir,'*'), os.path.join('vedo','fonts')),
 ]
 
 a = Analysis(['stager.py'],
@@ -36,9 +45,9 @@ a = Analysis(['stager.py'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
-             noarchive=False)
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+             noarchive=False,
+)
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 #splash = Splash('a.jpg',
 #                binaries=a.binaries,
@@ -55,7 +64,7 @@ exe = EXE(pyz,
  #         splash,
  #         splash.binaries,
           [],
-          name='stager',
+          name='stager.exe',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -66,4 +75,5 @@ exe = EXE(pyz,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
-          entitlements_file=None )
+          entitlements_file=None,
+)

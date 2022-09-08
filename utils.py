@@ -2,80 +2,31 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from vedo.utils import sortByColumn
-from vedo import Plotter, Points, Spline
 from scipy import signal
 import os
 
-#########################################################################
-class SplinePlotter(Plotter):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.cpoints = []
-        self.points = None
-        self.spline = None
-
-    def onLeftClick(self, evt):
-        if evt.actor:
-            p = evt.picked3d + [0,0,1]
-            self.cpoints.append(p)
-            self.update()
-
-    def onRightClick(self, evt):
-        if evt.actor and len(self.cpoints):
-            self.cpoints.pop() # pop removes from the list the last pt
-            self.update()
-
-    def update(self):
-        self.remove([self.spline, self.points])  # remove old points and spline
-        self.points = Points(self.cpoints).ps(10).c('purple5')
-        self.points.pickable(False)  # avoid picking the same point
-        if len(self.cpoints) > 2:
-            try:
-                self.spline = Spline(self.cpoints, closed=False).c('yellow5').lw(3)
-                self.add([self.points, self.spline])
-            except ValueError:
-                # tipically clicking too close points make Spline fail
-                self.cpoints = []
-                self.remove([self.spline, self.points]).render()
-                return
-        else:
-            self.add(self.points)
-
-    def keyPress(self, evt):
-        if evt.keyPressed == 'c':
-            self.cpoints = []
-            self.remove([self.spline, self.points]).render()
-
-    def datapoints(self):
-        if not len(self.cpoints):
-            return []
-        return np.array(self.cpoints)[:,(0,1)]
-
-
 #################################################################################
 class Limb:
-
-    def __init__(self, source='', author="unknown"):
+    def __init__(self, source="", author="unknown"):
 
         self.author = author.lower()
         self.datapoints = []
-        self.side = 'U'
-        self.name = ''
+        self.side = "U"
+        self.name = ""
         self.filename = source
         self.icp_score = 0
-        self.day=0
+        self.day = 0
         self.hour = 0
-        self.ageAsString=''
-        self.litterID=''
-        self.embryoID = ''
-        self.age=0
+        self.ageAsString = ""
+        self.litterID = ""
+        self.embryoID = ""
+        self.age = 0
         self.ageIndex = None
         self.age_in_minutes = 0
         self.age_h_m = (0, 0)
         self.extra_scale_factor = 1
 
-        self.Line = None     # holds the actors
+        self.Line = None  # holds the actors
         self.LineReg = None
 
         if self.author == "james":
@@ -92,26 +43,27 @@ class Limb:
         if not source:
             return
 
-        if 'RH' in source:
-            self.side = 'R'
-        elif 'LH' in source:
-            self.side = 'L'
-        elif 'right' in source:
-            self.side = 'R'
-        elif 'left' in source:
-            self.side = 'L'
+        if "RH" in source:
+            self.side = "R"
+        elif "LH" in source:
+            self.side = "L"
+        elif "right" in source:
+            self.side = "R"
+        elif "left" in source:
+            self.side = "L"
 
         f = open(source, "r")
         lines = f.readlines()
         f.close()
 
-        self.name = source.split('/')[-1]
+        self.name = source.split("/")[-1]
 
         for i in range(len(lines)):
-            if i<1: continue
+            if i < 1:
+                continue
             line = lines[i]
-            if ',' in line:
-                line = lines[i].split(',')
+            if "," in line:
+                line = lines[i].split(",")
             else:
                 line = lines[i].split()
 
@@ -120,11 +72,11 @@ class Limb:
             elif line[0] == "FITSHAPE":
                 self.fit_points.append([float(line[1]), float(line[2]), 0.0])
             elif line[0] == "RESULT":
-                self.fit_age   = float(line[1])
+                self.fit_age = float(line[1])
                 self.fit_error = float(line[2])
-                self.fit_chi2  = float(line[3])
-            elif line[0] == "Total": #  pick "Total lengths different by X per cent"
-                self.fit_delta_length = float(line[4])/100.
+                self.fit_chi2 = float(line[3])
+            elif line[0] == "Total":  #  pick "Total lengths different by X per cent"
+                self.fit_delta_length = float(line[4]) / 100.0
 
         if "MIRRORED" in lines[i]:
             if self.side == "R":
@@ -136,62 +88,64 @@ class Limb:
         if len(self.fit_points):
             self.fit_points = np.array(self.fit_points) * self.extra_scale_factor
 
-        if self.side == 'L':
-            self.datapoints[:,0] *= -1
+        if self.side == "L":
+            self.datapoints[:, 0] *= -1
 
         if self.author == "heura":
-            sfn = self.name.split('.')
-            self.day = int(sfn[0].replace("E",""))
-            self.hour = int(sfn[1].split('_')[0])
-            self.ageAsString = str(self.day)+"."+sfn[1].split('_')[0]
-            self.litterID = sfn[1].split('_')[1]
+            sfn = self.name.split(".")
+            self.day = int(sfn[0].replace("E", ""))
+            self.hour = int(sfn[1].split("_")[0])
+            self.ageAsString = str(self.day) + "." + sfn[1].split("_")[0]
+            self.litterID = sfn[1].split("_")[1]
             self.embryoID = ""
         elif self.author == "welsh":
             sfn = self.name
-            sfn = sfn.replace('E13.0', 'E13;00_')
-            sfn = sfn.replace('E13.25','E13;06_')
-            sfn = sfn.replace('E13.5', 'E13;12_')
-            sfn = sfn.replace('E13.75','E13;18_')
-            sfn = sfn.replace('E14.0', 'E14;00_')
-            sfn = sfn.replace('E14.25','E14;06_')
-            sfn = sfn.replace('E14.5', 'E14;12_')
-            sfn = sfn.replace('E14.75','E14;18_')
-            sfn = sfn.replace('__','_')
-            sfn = sfn.split('_')
+            sfn = sfn.replace("E13.0", "E13;00_")
+            sfn = sfn.replace("E13.25", "E13;06_")
+            sfn = sfn.replace("E13.5", "E13;12_")
+            sfn = sfn.replace("E13.75", "E13;18_")
+            sfn = sfn.replace("E14.0", "E14;00_")
+            sfn = sfn.replace("E14.25", "E14;06_")
+            sfn = sfn.replace("E14.5", "E14;12_")
+            sfn = sfn.replace("E14.75", "E14;18_")
+            sfn = sfn.replace("__", "_")
+            sfn = sfn.split("_")
             self.age = 0
             try:
-                self.day = int(sfn[0].split(';')[0].replace("E",""))
-                self.hour = int(sfn[0].split(';')[1])
-                self.ageAsString = "E"+str(self.day)+"."+sfn[0].split(';')[1]
+                self.day = int(sfn[0].split(";")[0].replace("E", ""))
+                self.hour = int(sfn[0].split(";")[1])
+                self.ageAsString = "E" + str(self.day) + "." + sfn[0].split(";")[1]
                 self.litterID = sfn[1]
             except:
                 # not in the usual format E...
                 pass
         else:
-            sfn = self.name.split('_')
+            sfn = self.name.split("_")
             self.age = 0
-            self.day = int(sfn[0].split(';')[0].replace("E",""))
-            self.hour = int(sfn[0].split(';')[1])
-            self.ageAsString = "E"+str(self.day)+"."+sfn[0].split(';')[1]
+            self.day = int(sfn[0].split(";")[0].replace("E", ""))
+            self.hour = int(sfn[0].split(";")[1])
+            self.ageAsString = "E" + str(self.day) + "." + sfn[0].split(";")[1]
             self.litterID = sfn[1]
             self.embryoID = sfn[2]
 
-        self.age = 24*self.day + self.hour
+        self.age = 24 * self.day + self.hour
 
 
 #################################################################################
-def load_welsh_limbs(source='data/staged_welsh/'):
+def load_welsh_limbs(source="data/staged_welsh/"):
     limbs = []
     if source.endswith(".npy"):
         llist = np.load(source, allow_pickle=True)
         for dlimb in llist:
-            if "kevin" not in dlimb["author"]: continue
+            if "kevin" not in dlimb["author"]:
+                continue
             lm = Limb(dlimb)
             limbs.append(lm)
     else:
         for fn in sorted(os.listdir(source)):
-            if not fn.endswith(".txt"): continue
-            lm = Limb(source+fn, author="welsh")
+            if not fn.endswith(".txt"):
+                continue
+            lm = Limb(source + fn, author="welsh")
             limbs.append(lm)
     return limbs, ['13.00','13.06','13.12','13.18','14.00','14.06', '14.12', '14.18']
 
@@ -207,8 +161,8 @@ def read_measured_points(filename):
     for i, line in enumerate(lines):
         if not i:
             continue
-        if ',' in line:
-            line = lines[i].split(',')
+        if "," in line:
+            line = lines[i].split(",")
         else:
             line = lines[i].split()
 
@@ -220,16 +174,17 @@ def read_measured_points(filename):
 
 ###############################################
 def ageAsString(agehour):
-    day = int(agehour/24.0)
-    h   = int(agehour) - 24*day
-    s = "0" if h<10 else ""
-    return "E"+str(day)+":"+s+str(h)
+    day = int(agehour / 24.0)
+    h = int(agehour) - 24 * day
+    s = "0" if h < 10 else ""
+    return "E" + str(day) + ":" + s + str(h)
+
 
 def fdays(agehour):
     # days as float: compute age as e.g. E12.75
-    agedec = agehour/24
-    serie = np.linspace(8,20, num=(20-8)*20, endpoint=False)
-    idmin = np.argmin(np.abs(serie-agedec))
+    agedec = agehour / 24
+    serie = np.linspace(8, 20, num=(20 - 8) * 20, endpoint=False)
+    idmin = np.argmin(np.abs(serie - agedec))
     return np.round(serie[idmin], 2)
 
 
@@ -247,8 +202,9 @@ def fit_parabola(x, y):
     # print(f)
     xx = np.linspace(0, 200)
     yy = f(xx)
-    pts = np.c_[xx,yy]
+    pts = np.c_[xx, yy]
     return fit, pts
+
 
 ########################################
 def find_extrema(data, n=5, distance=20, invert=False):

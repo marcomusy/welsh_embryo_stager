@@ -43,10 +43,10 @@ def plot_stats(do_plots=0):
     pp += Line([310, 310], [370, 370], lw=2, c="r4")
     pp.show().close()
 
-    pp = plot(sorted(ages), 'o', lw=0, ms=0.8,
+    fig = plot(sorted(ages), 'o', lw=0, ms=0.8,
               title='ordered ages vs index (a bit meaningless)')
-    pp += Line([40,320], [190, 360], lw=2, c='g4')
-    pp.show().close()
+    fig += Line([40,320], [190, 360], lw=2, c='g4')
+    fig.show().close()
     exit(0)
 
 

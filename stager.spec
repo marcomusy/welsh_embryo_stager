@@ -7,9 +7,9 @@
 # pyinstaller stager.spec
 #
 # To run:
-# dist/stager.exe test_E14.0_L1-02_x2.5_LHL.txt
+# dist/stager.exe pics/E14.5_L3-03_HL2.5X_LHL.txt
 # or
-# dist/stager.exe test_image.jpg
+# dist/stager.exe pics/E14.5_L3-03_HL2.5X.jpg
 
 
 import os

@@ -13,17 +13,19 @@
 
 
 import os
+
+import sys
+sys.setrecursionlimit(sys.getrecursionlimit() * 5)
+
 from vedo import installdir as vedo_installdir
 vedo_fontsdir = os.path.join(vedo_installdir, 'fonts')
 print('vedo installation is in', vedo_installdir)
 print('Fonts are in', vedo_fontsdir)
 
-
 block_cipher = None
 
 
 added_files = [
-#    ('tuning/*', 'tuning/'), ##doesnt work?
     (os.path.join('tuning','*'), 'tuning'),
     (os.path.join(vedo_fontsdir,'*'), os.path.join('vedo','fonts')),
 ]

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
-from vedo.utils import sortByColumn
+from vedo.utils import sort_by_column
 from scipy import signal
 import os
 
@@ -216,8 +216,8 @@ def find_extrema(data, n=5, distance=20, invert=False):
     peak_x = peak_ids
     peak_y = data[peak_ids]
     peaks = np.c_[peak_x, peak_y]
-    peaks = sortByColumn(peaks, 1, invert=True)[:n]
-    peaks = sortByColumn(peaks, 0)
+    peaks = sort_by_column(peaks, 1, invert=True)[:n]
+    peaks = sort_by_column(peaks, 0)
     peak_x, peak_y = peaks.T
     peak_ids = peak_x.astype(int)
     return peak_ids, peaks

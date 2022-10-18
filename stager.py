@@ -6,10 +6,10 @@ from datetime import datetime
 import numpy as np
 from vedo import __version__ as _vedo_version
 from vedo import settings, mag, precision, load, sys_platform, show
-from vedo import fitCircle, printc, Plotter, Text2D, Sphere
+from vedo import fit_circle, printc, Plotter, Text2D, Sphere
 from vedo import Line, Ribbon, Spline, Points, Axes, Circle, Point, Picture
 from vedo.applications import SplinePlotter
-from vedo.utils import sortByColumn
+from vedo.utils import sort_by_column
 from vedo.pyplot import plot, histogram
 from utils import Limb, read_measured_points
 from utils import find_extrema, fit_parabola, ageAsString, fdays
@@ -121,7 +121,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     pts.subsample(0.05)  # heavily subsample
 
     # order points by increasing area (axis=x=0)
-    pts = sortByColumn(pts.points(), 0)
+    pts = sort_by_column(pts.points(), 0)
     aveline = Line(pts, lw=1, c="k1")
 
     aveline_s = Spline(aveline, res=100, smooth=smooth)  ###### DONT CHANGE 100
@@ -177,10 +177,10 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
 def descriptors(datapoints, do_plots=False):
 
     eline = Spline(datapoints, res=200).c("b3").lw(4)
-    eline.scale(1 / eline.averageSize())
+    eline.scale(1 / eline.average_size())
 
     ## first round ##
-    cm1 = eline.centerOfMass()
+    cm1 = eline.center_of_mass()
     epts = eline.points()
     data_y = mag(epts - cm1)
     # Find peaks and valleys
@@ -190,7 +190,7 @@ def descriptors(datapoints, do_plots=False):
         return (0, 0, 0), []
 
     ## second round ##
-    cm2, r2, _ = fitCircle(epts[peak_x])
+    cm2, r2, _ = fit_circle(epts[peak_x])
     if not r2:
         return (0, 0, 0), []
     data_y = mag(epts - cm2)
@@ -201,7 +201,7 @@ def descriptors(datapoints, do_plots=False):
         return (0, 0, 0), []
 
     ## third round ##
-    cm3, r3, _ = fitCircle(epts[peak_x])
+    cm3, r3, _ = fit_circle(epts[peak_x])
     if not r3:
         return (0, 0, 0), []
     data_y = mag(epts - cm3)
@@ -262,7 +262,7 @@ def predict(datapoints, embryoname="", do_plots=True):
     # tcourse = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_spline.vtk').c('k').lw(5)
 
     # the id (or step) is what we need to map to age
-    idn = tcourse.closestPoint(result, returnPointId=True)
+    idn = tcourse.closest_point(result, return_point_id=True)
     q = tcourse.points()[idn]
 
     # find the closest entry in the calibration curve
@@ -274,7 +274,7 @@ def predict(datapoints, embryoname="", do_plots=True):
     best_score = mag(result - q)
 
     r = best_score * 1.2
-    sigma = len(tcourse.closestPoint(result, radius=r, returnPointId=True))
+    sigma = len(tcourse.closest_point(result, radius=r, return_point_id=True))
     sigma = round((sigma + 1) / 2)  # heuristic
     pic_array = None
 
@@ -285,16 +285,16 @@ def predict(datapoints, embryoname="", do_plots=True):
             xtitle="area",
             ytitle="aspect ratio",
             ztitle="parabolic",
-            xTitleBackfaceColor="t",
-            yTitleBackfaceColor="t",
-            zTitleBackfaceColor="t",
+            xtitle_backface_color="t",
+            ytitle_backface_color="t",
+            ztitle_backface_color="t",
         )
         pt = Point(result, r=15, c="r5")
         zshad = tcourse.zbounds()[0]
 
         joinline = Line(result, q).lw(3).c("g5")
 
-        tcourse.addShadow(plane="z", point=zshad)
+        tcourse.add_shadow(plane="z", point=zshad)
         tcourse_shad = tcourse.shadows[0].lw(1)
         ribtc = Ribbon(tcourse, tcourse_shad).c("k").alpha(0.1).lighting("off")
 
@@ -382,16 +382,16 @@ def predict(datapoints, embryoname="", do_plots=True):
 #####################################################################
 if __name__ == "__main__":
 
-    settings.defaultFont = "Calco"
-    settings.useDepthPeeling = sys_platform != "Darwin"
+    settings.default_font = "Calco"
+    settings.use_depth_peeling = sys_platform != "Darwin"
 
     # only for calibration:
     # generate_calibration_welsh()
     # plot_stats()
 
     if len(sys.argv):
-        settings.windowSplittingPosition = 0.5
-        settings.enableDefaultMouseCallbacks = False
+        settings.window_splitting_position = 0.5
+        settings.enable_default_mouse_callbacks = False
 
         filename = sys.argv[1]
         if not os.path.isfile(filename):

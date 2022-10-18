@@ -9,7 +9,8 @@ Stage a mouse embryo in the age range `E14` -> `E15` by drawing a spline on a ph
 - Install [`vedo`](https://vedo.embl.es/)
 ```bash
 conda install scipy
-pip install vedo==2022.3.0
+pip install vedo==2022.4.1
+pip install vtk==9.0.3  # optional
 ```
 
 - Copy the repository locally

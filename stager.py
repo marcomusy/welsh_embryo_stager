@@ -64,7 +64,7 @@ def plot_2d_cloud():
     limb_desc = np.array(limb_desc)
 
     rl = Points(limb_desc, r=12, c="g4").cmap("Reds", limb_desc[:, 2]).add_scalarbar3d()
-    rl.scalarbar.useBounds()
+    rl.scalarbar.use_bounds()
     show(
         rl, zoom=1.8, size=(1200, 900), axes=dict(xtitle=tits[0], ytitle=tits[1], ztitle="age/h"),
     )
@@ -134,9 +134,9 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
 
     ######### GENERATE and save the calibration curve
     # (the first and last agegroups are extrapolations)
-    ids = np.array([0, 6, 11, 21, 44, 64, 77, 99])  # step along the aveline_s
-    agegroups = np.array([318, 324, 330, 336, 342, 348, 354, 366])  # average age at that point
-    index = np.where(agegroups == selected_agegroup)[0][0]
+    ids       = np.array([  0,   6,  11,  21,  44,  64,  77,  99]) # step along the aveline_s
+    agegroups = np.array([318, 324, 330, 336, 342, 348, 354, 366]) # average age at that point
+    index = np.where(agegroups==selected_agegroup)[0][0]
 
     calib = np.c_[ids, agegroups]
     calib_s = Spline(calib, res=100).c("b3")
@@ -253,7 +253,7 @@ def predict(datapoints, embryoname="", do_plots=True):
 
     result, vobj = descriptors(datapoints, do_plots=do_plots)
 
-    tcourse = load(os.path.join("tuning/", "calibration_spline.vtk")).c("k").lw(5)
+    tcourse = load(os.path.join("tuning", "calibration_spline.vtk")).c("k").lw(5)
     # tcourse = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_spline.vtk').c('k').lw(5)
 
     # the id (or step) is what we need to map to age
@@ -261,7 +261,7 @@ def predict(datapoints, embryoname="", do_plots=True):
     q = tcourse.points()[idn]
 
     # find the closest entry in the calibration curve
-    calib = load(os.path.join("tuning/", "calibration_table.vtk")).points()
+    calib = load(os.path.join("tuning", "calibration_table.vtk")).points()
     # calib = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_table.vtk').points()
 
     idt = (np.abs(calib[:, 0] - idn)).argmin()
@@ -366,6 +366,7 @@ if __name__ == "__main__":
     settings.default_font = "Calco"
     settings.use_depth_peeling = sys_platform != "Darwin"
 
+    # only for calibration:
     # generate_calibration_welsh()
     # plot_stats()
 
@@ -390,9 +391,10 @@ if __name__ == "__main__":
                 exit(0)
 
             t = "Click to add a point\n"
-            t += "Right-click to remove it\n"
-            t += "Drag mouse to change constrast\n"
-            t += "Press c to clear points"
+            t+= "Right-click to remove it\n"
+            t+= "Drag mouse to change constrast\n"
+            t+= "Press c to clear points\n"
+            t+= "Press q to proceed"
             instrucs = Text2D(t, pos="bottom-left", c="k1", bg="g9", font="Quikhand", alpha=0.5)
 
             plt = SplinePlotter(pic, size=(1200, 1000), title="Welsh Mouse Staging System")

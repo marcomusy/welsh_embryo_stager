@@ -180,6 +180,11 @@ def age_as_string(agehour):
     s = "0" if h < 10 else ""
     return "E" + str(day) + ":" + s + str(h)
 
+def age_in_hours(name):
+    age = os.path.basename(name).split("_")[0]
+    age = age.replace("E", "")
+    agehour = float(age)*24
+    return np.round(agehour).astype(int)
 
 def fdays(agehour):
     # days as float: compute age as e.g. E12.75

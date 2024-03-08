@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Using vedo 2024.5.1
 import os, sys
 from glob import glob
 from datetime import datetime
@@ -7,14 +8,14 @@ import numpy as np
 from vedo import __version__ as _vedo_version
 from vedo import settings, mag, precision, load, sys_platform, show
 from vedo import fit_circle, printc, Plotter, Text2D, Sphere
-from vedo import Line, Ribbon, Spline, Points, Axes, Circle, Point, Picture
+from vedo import Line, Ribbon, Spline, Points, Axes, Circle, Point, Image
 from vedo.utils import sort_by_column
 from vedo.pyplot import plot, histogram
 from vedo.applications import SplinePlotter
 from utils import Limb, read_measured_points
 from utils import find_extrema, fit_parabola, age_as_string, fdays
 
-_version = "welsh_stager v0.4"
+_version = "welsh_stager v0.5"
 
 ##################################################################### plots
 datadir = "data/staged_welsh_reduced/"  # for training only
@@ -28,7 +29,7 @@ def plot_stats(do_plots=0):
     for f in glob(os.path.join(datadir, "*.txt")):
         embryo = Limb(f, author="welsh")
         result = predict(embryo.datapoints, do_plots=0)
-        pic_array, best_age, sigma, best_score = result
+        _, best_age, sigma, best_score = result
         ages.append(best_age)
         nominal_ages.append(embryo.age)
         errors.append(sigma)
@@ -56,7 +57,7 @@ def plot_2d_cloud():
     for filename in glob(os.path.join(datadir, "*.txt")):
         embryo = Limb(filename, author="welsh")
         spline = Spline(embryo.datapoints, res=200)
-        area, aratio, parabolic = descriptors(spline.points(), do_plots=0)
+        area, aratio, parabolic = descriptors(spline.vertices, do_plots=0)
         if area:
             limb_desc.append([area, aratio, embryo.age])
         else:
@@ -83,7 +84,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     # for age in range(309, 361):
     #     eline = ref_shapes[age-249]
     #     eline = Spline(eline.cutWithPlane(origin=(1.5,0,0)), res=200) ### TEST CUT
-    #     area, aratio, parabolic = descriptors(eline.points())[0]
+    #     area, aratio, parabolic = descriptors(eline.vertices)[0]
     #     desc.append([area, aratio, parabolic])
     # tc = Line(desc).lw(1).c('k4')
 
@@ -95,7 +96,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
         embryo = Limb(filename, author="welsh")
         spline = Spline(embryo.datapoints, res=200)
 
-        result, vobj = descriptors(spline.points())
+        result, vobj = descriptors(spline.vertices)
         if result[0]:
             if embryo.age == selected_agegroup:
                 agegroup_pts.append(result)
@@ -120,7 +121,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     pts.subsample(0.05)  # heavily subsample
 
     # order points by increasing area (axis=x=0)
-    pts = sort_by_column(pts.points(), 0)
+    pts = sort_by_column(pts.vertices, 0)
     aveline = Line(pts, lw=1, c="k1")
 
     aveline_s = Spline(aveline, res=100, smooth=smooth)  ###### DONT CHANGE 100
@@ -157,7 +158,7 @@ def generate_calibration_welsh(selected_agegroup=348, smooth=0.1):
     fig += Point([ids[index], selected_agegroup], r=15, c="r4")
     fig.show(zoom=1.5, size=(1100, 825), title="CALIBRATION CURVE").close()
 
-    aveline_pt = Point(aveline_s.points()[ids[index]], r=25, c="r4")
+    aveline_pt = Point(aveline_s.vertices[ids[index]], r=25, c="r4")
 
     show(
         tc, rl, ag, labs,
@@ -177,7 +178,7 @@ def descriptors(datapoints, do_plots=False):
 
     ## first round ##
     cm1 = eline.center_of_mass()
-    epts = eline.points()
+    epts = eline.vertices
     data_y = mag(epts - cm1)
     # Find peaks and valleys
     peak_x, green_peaks = find_extrema(data_y, n=5)
@@ -258,11 +259,11 @@ def predict(datapoints, embryoname="", do_plots=True):
 
     # the id (or step) is what we need to map to age
     idn = tcourse.closest_point(result, return_point_id=True)
-    q = tcourse.points()[idn]
+    q = tcourse.vertices[idn]
 
     # find the closest entry in the calibration curve
-    calib = load(os.path.join("tuning", "calibration_table.vtk")).points()
-    # calib = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_table.vtk').points()
+    calib = load(os.path.join("tuning", "calibration_table.vtk")).vertices
+    # calib = load('https://github.com/marcomusy/welsh_embryo_stager/blob/main/tuning/calibration_table.vtk').vertices
 
     idt = (np.abs(calib[:, 0] - idn)).argmin()
     best_age = round(calib[idt][1])
@@ -295,7 +296,7 @@ def predict(datapoints, embryoname="", do_plots=True):
 
         txtf = Text2D(
             f"{embryoname}\nEmbryo is"
-            f" {age_as_string(best_age)} \pm{sigma}h"
+            f" {age_as_string(best_age)} :pm{sigma}h"
             f" (or E{fdays(best_age)}, {int(best_age+0.5)}h) ",
             pos="top-left",
             bg="purple6",
@@ -308,7 +309,7 @@ def predict(datapoints, embryoname="", do_plots=True):
         )
         vers = Text2D(f"{_version}, vedo {_vedo_version}", pos="bottom-right", s=0.7)
         chi2msg = Text2D(
-            f"\chi\^2 = {precision(best_score,2)}", pos="top-right", s=1.1, font="Kanopus",
+            f":chi:^2 = {precision(best_score,2)}", pos="top-right", s=1.1, font="Kanopus",
         )
 
         if not len(vobj):
@@ -385,7 +386,7 @@ if __name__ == "__main__":
             predict(datapoints, embryoname=name)
         else:
             try:
-                pic = Picture(filename, channels=(0, 1, 2))
+                pic = Image(filename, channels=(0, 1, 2))
             except:
                 print("\nPlease use a valid image or txt file with points coords.\n")
                 exit(0)

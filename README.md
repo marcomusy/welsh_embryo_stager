@@ -6,11 +6,10 @@ Stage a mouse embryo in the age range `E14` -> `E15` by drawing a spline on a ph
 
 - Install miniconda (if needed) from [here](https://docs.conda.io/en/latest/miniconda.html).
 
-- Install [`vedo`](https://vedo.embl.es/)
+- Install [`vedo`](https://vedo.embl.es/) and `scipy` by typing:
 ```bash
+pip install vedo -U
 conda install scipy
-pip install vedo==2022.4.1
-pip install vtk==9.0.3  # optional
 ```
 
 - Copy the repository locally
@@ -36,7 +35,7 @@ python stager.py pics/E14.5_L3-03_HL2.5X_LHL.txt
 
 5. Press `q` when finished, an output window will show up with the age of the embryo
 
-![](https://user-images.githubusercontent.com/32848391/158235205-438510d4-6707-4e37-b9bb-17f6516244a1.png)
+![](https://github.com/marcomusy/welsh_embryo_stager/assets/32848391/10acd68d-af42-486e-a4cf-86745801e837)
 
 The above output image and a text file with clicked points are saved to directory `output/` for reference.
 
